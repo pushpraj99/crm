@@ -1,17 +1,17 @@
 const express = require('express');
-const router = express.Router();
-const validateRequest = require('../middleware/validateRequest');
+const router  = express.Router();
 const {
   getActivities,
   logActivity,
+  updateActivity,
+  deleteActivity,
   getActivitiesByCustomerId
 } = require('../controllers/activityController');
 
-router.route('/')
-  .get(getActivities)
-  .post(validateRequest(['type', 'description', 'customerId']), logActivity);
-
-router.route('/:customerId')
-  .get(getActivitiesByCustomerId);
+router.get('/',                           getActivities);
+router.post('/',                          logActivity);
+router.put('/:id',                        updateActivity);
+router.delete('/:id',                     deleteActivity);
+router.get('/customer/:customerId',       getActivitiesByCustomerId);
 
 module.exports = router;

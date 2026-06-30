@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCRM } from '../../context/CRMContext';
-import { X } from 'lucide-react';
+import { X, Edit } from 'lucide-react';
+import QuickEditCustomerModal from '../customers/QuickEditCustomerModal';
 
 const DealForm = ({ deal, onSubmit, onClose }) => {
   const { customers } = useCRM();
@@ -13,6 +14,7 @@ const DealForm = ({ deal, onSubmit, onClose }) => {
     notes: ''
   });
   const [errors, setErrors] = useState({});
+  const [showEditCustomer, setShowEditCustomer] = useState(false);
 
   useEffect(() => {
     if (deal) {
@@ -58,13 +60,13 @@ const DealForm = ({ deal, onSubmit, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
+      <div className="w-full max-w-lg th-surface border rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-          <h3 className="text-lg font-bold text-white">
+        <div className="flex items-center justify-between px-6 py-4 border-b th-border">
+          <h3 className="text-lg font-bold th-text-primary">
             {deal ? 'Edit Deal' : 'Create New Deal'}
           </h3>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-slate-400 hover:th-text-primary transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -74,15 +76,15 @@ const DealForm = ({ deal, onSubmit, onClose }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Title */}
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-semibold text-slate-400">Deal Title *</label>
+              <label className="text-xs font-semibold th-text-secondary">Deal Title *</label>
               <input
                 type="text"
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g. Enterprise License Expansion"
-                className={`w-full bg-slate-950 border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all ${
-                  errors.title ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-800 focus:border-brand-500'
+                className={`w-full rounded-xl px-4 py-2.5 text-sm outline-none th-input ${
+                  errors.title ? 'border-rose-500/50 focus:ring-rose-500/20' : ''
                 }`}
               />
               {errors.title && <p className="text-xs text-rose-400 mt-1">{errors.title}</p>}
@@ -90,15 +92,15 @@ const DealForm = ({ deal, onSubmit, onClose }) => {
 
             {/* Value */}
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-400">Deal Value (USD) *</label>
+              <label className="text-xs font-semibold th-text-secondary">Deal Value (USD) *</label>
               <input
                 type="number"
                 name="value"
                 value={formData.value}
                 onChange={handleChange}
                 placeholder="e.g. 15000"
-                className={`w-full bg-slate-950 border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all ${
-                  errors.value ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-800 focus:border-brand-500'
+                className={`w-full rounded-xl px-4 py-2.5 text-sm outline-none th-input ${
+                  errors.value ? 'border-rose-500/50 focus:ring-rose-500/20' : ''
                 }`}
               />
               {errors.value && <p className="text-xs text-rose-400 mt-1">{errors.value}</p>}
@@ -106,31 +108,43 @@ const DealForm = ({ deal, onSubmit, onClose }) => {
 
             {/* Customer select */}
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-400">Customer *</label>
-              <select
-                name="customerId"
-                value={formData.customerId}
-                onChange={handleChange}
-                className={`w-full bg-slate-950 border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all ${
-                  errors.customerId ? 'border-rose-500/50 focus:ring-rose-500/20' : 'border-slate-800 focus:border-brand-500'
-                }`}
-              >
-                <option value="">Select Customer</option>
-                {customers.map(c => (
-                  <option key={c._id} value={c._id}>{c.name} ({c.company || 'Private'})</option>
-                ))}
-              </select>
+              <label className="text-xs font-semibold th-text-secondary">Customer *</label>
+              <div className="flex gap-2">
+                <select
+                  name="customerId"
+                  value={formData.customerId}
+                  onChange={handleChange}
+                  className={`flex-1 rounded-xl px-4 py-2.5 text-sm outline-none th-input cursor-pointer ${
+                    errors.customerId ? 'border-rose-500/50 focus:ring-rose-500/20' : ''
+                  }`}
+                >
+                  <option value="">Select Customer</option>
+                  {customers.map(c => (
+                    <option key={c._id} value={c._id}>{c.name} ({c.company || 'Private'})</option>
+                  ))}
+                </select>
+                {formData.customerId && (
+                  <button
+                    type="button"
+                    onClick={() => setShowEditCustomer(true)}
+                    title="Edit Customer Information"
+                    className="p-2.5 rounded-xl border th-border bg-brand-50 hover:bg-brand-100 dark:bg-brand-950/40 dark:hover:bg-brand-950 text-brand-500 flex items-center justify-center transition-colors"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
               {errors.customerId && <p className="text-xs text-rose-400 mt-1">{errors.customerId}</p>}
             </div>
 
             {/* Stage */}
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-400">Pipeline Stage</label>
+              <label className="text-xs font-semibold th-text-secondary">Pipeline Stage</label>
               <select
                 name="stage"
                 value={formData.stage}
                 onChange={handleChange}
-                className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all"
+                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none th-input cursor-pointer"
               >
                 <option value="prospecting">Prospecting</option>
                 <option value="proposal">Proposal</option>
@@ -142,36 +156,36 @@ const DealForm = ({ deal, onSubmit, onClose }) => {
 
             {/* Expected Close Date */}
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-400">Expected Close Date</label>
+              <label className="text-xs font-semibold th-text-secondary">Expected Close Date</label>
               <input
                 type="date"
                 name="expectedCloseDate"
                 value={formData.expectedCloseDate}
                 onChange={handleChange}
-                className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all"
+                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none th-input cursor-pointer"
               />
             </div>
 
             {/* Notes */}
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-semibold text-slate-400">Deal Notes</label>
+              <label className="text-xs font-semibold th-text-secondary">Deal Notes</label>
               <textarea
                 name="notes"
                 value={formData.notes}
                 onChange={handleChange}
                 rows="3"
                 placeholder="Include specifications, key decisions, or updates about this deal..."
-                className="w-full bg-slate-950 border border-slate-800 focus:border-brand-500 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/50 transition-all resize-none"
+                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none th-input resize-none"
               />
             </div>
           </div>
 
           {/* Action buttons */}
-          <div className="flex gap-3 justify-end pt-4 border-t border-slate-800">
+          <div className="flex gap-3 justify-end pt-4 border-t th-border">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl text-sm font-semibold bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors border border-slate-700/50"
+              className="px-5 py-2.5 rounded-xl text-sm font-semibold border th-border th-text-secondary bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
               Cancel
             </button>
@@ -184,6 +198,13 @@ const DealForm = ({ deal, onSubmit, onClose }) => {
           </div>
         </form>
       </div>
+
+      {showEditCustomer && (
+        <QuickEditCustomerModal
+          customerId={formData.customerId}
+          onClose={() => setShowEditCustomer(false)}
+        />
+      )}
     </div>
   );
 };

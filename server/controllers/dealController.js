@@ -35,6 +35,15 @@ const createDeal = async (req, res, next) => {
       performedBy: 'System'
     });
 
+    try {
+      const { createNotification } = require('./notificationController');
+      if (req.user) {
+        await createNotification(req.user._id, 'Deal Created', `New deal "${title}" created with value $${value}.`, 'success');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
     sendSuccess(res, deal, 'Deal created successfully', 201);
   } catch (error) {
     next(error);
@@ -64,6 +73,20 @@ const updateDeal = async (req, res, next) => {
         customerId: deal.customerId,
         performedBy: 'System'
       });
+    }
+
+    try {
+      const { createNotification } = require('./notificationController');
+      if (req.user && stage && stage !== oldDeal.stage) {
+        await createNotification(
+          req.user._id, 
+          'Deal Stage Updated', 
+          `Deal "${deal.title}" stage updated to ${stage}.`, 
+          stage === 'closed-won' ? 'success' : stage === 'closed-lost' ? 'error' : 'info'
+        );
+      }
+    } catch (e) {
+      console.error(e);
     }
 
     sendSuccess(res, deal, 'Deal updated successfully');

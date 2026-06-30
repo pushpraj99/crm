@@ -3,66 +3,74 @@ import { formatDate } from '../../utils/helpers';
 import { Phone, Mail, FileText, Calendar } from 'lucide-react';
 
 const RecentActivity = ({ activities = [] }) => {
-  const getActivityIcon = (type) => {
+  const getActivityConfig = (type) => {
     switch (type?.toLowerCase()) {
-      case 'call':
-        return { icon: Phone, color: 'text-sky-400 bg-sky-500/10 border-sky-500/20' };
-      case 'email':
-        return { icon: Mail, color: 'text-amber-400 bg-amber-500/10 border-amber-500/20' };
-      case 'meeting':
-        return { icon: Calendar, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' };
-      case 'note':
-      default:
-        return { icon: FileText, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' };
+      case 'call':    return { icon: Phone,    bg: '#0ea5e920', color: '#0ea5e9', border: '#0ea5e930' };
+      case 'email':   return { icon: Mail,     bg: '#f59e0b20', color: '#f59e0b', border: '#f59e0b30' };
+      case 'meeting': return { icon: Calendar, bg: '#10b98120', color: '#10b981', border: '#10b98130' };
+      default:        return { icon: FileText, bg: '#a855f720', color: '#a855f7', border: '#a855f730' };
     }
   };
 
   if (!activities || activities.length === 0) {
     return (
-      <div className="glass rounded-2xl p-6 h-full flex flex-col justify-center items-center text-slate-500 text-sm">
+      <div className="th-surface rounded-2xl p-6 h-full flex flex-col justify-center items-center text-sm" style={{ color: 'var(--text-muted)' }}>
+        <FileText className="w-8 h-8 mb-3 opacity-30" />
         No recent activities logged.
       </div>
     );
   }
 
   return (
-    <div className="glass rounded-2xl p-6 flex flex-col h-full">
-      <h3 className="text-lg font-bold text-white mb-6">Recent System Activity</h3>
-      <div className="space-y-6 overflow-y-auto max-h-[360px] pr-2">
+    <div className="th-surface rounded-2xl p-6 flex flex-col h-full">
+      <h3 className="text-sm font-bold uppercase tracking-wider mb-6" style={{ color: 'var(--text-muted)' }}>
+        Recent Activity
+      </h3>
+      <div className="space-y-5 overflow-y-auto max-h-[360px] pr-1">
         {activities.slice(0, 5).map((activity, index) => {
-          const config = getActivityIcon(activity.type);
+          const config = getActivityConfig(activity.type);
           const IconComponent = config.icon;
-          
+
           return (
             <div key={activity._id || index} className="flex gap-4 relative group">
-              {/* Line between nodes */}
-              {index !== activities.slice(0, 5).length - 1 && (
-                <span className="absolute left-[18px] top-9 bottom-[-24px] w-[2px] bg-slate-800" />
+              {/* Timeline line */}
+              {index !== Math.min(activities.length, 5) - 1 && (
+                <span
+                  className="absolute left-[17px] top-9 bottom-[-20px] w-[1px]"
+                  style={{ backgroundColor: 'var(--border)' }}
+                />
               )}
-              
-              {/* Icon Container */}
-              <div className={`w-9 h-9 rounded-xl border flex items-center justify-center flex-shrink-0 ${config.color} shadow-sm`}>
-                <IconComponent className="w-4 h-4" />
+
+              {/* Icon */}
+              <div
+                className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: config.bg, color: config.color, border: `1px solid ${config.border}` }}
+              >
+                <IconComponent className="w-3.5 h-3.5" />
               </div>
 
-              {/* Activity Details */}
+              {/* Content */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-white truncate">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
                     {activity.description}
                   </p>
-                  <span className="text-xs text-slate-500 flex-shrink-0">
+                  <span className="text-xs flex-shrink-0 mt-0.5" style={{ color: 'var(--text-muted)' }}>
                     {formatDate(activity.performedAt)}
                   </span>
                 </div>
-                <div className="mt-1 flex items-center gap-2">
+                <div className="mt-0.5 flex items-center gap-2">
                   {activity.customerId && (
-                    <span className="text-xs text-brand-400 hover:underline truncate">
+                    <span className="text-xs font-medium truncate" style={{ color: 'var(--accent)' }}>
                       {activity.customerId.name || 'Customer'}
                     </span>
                   )}
-                  {activity.customerId && <span className="text-slate-700">•</span>}
-                  <span className="text-xs text-slate-400">By {activity.performedBy || 'System'}</span>
+                  {activity.customerId && (
+                    <span style={{ color: 'var(--border-strong)' }}>·</span>
+                  )}
+                  <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    By {activity.performedBy || 'System'}
+                  </span>
                 </div>
               </div>
             </div>

@@ -1,30 +1,46 @@
 import React from 'react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
-const StatsCard = ({ title, value, icon: Icon, description, trend, trendType = 'up' }) => {
+const StatsCard = ({ title, value, icon: Icon, description, trend, trendType = 'up', onClick }) => {
+  const isUp = trendType === 'up';
   return (
-    <div className="glass rounded-2xl p-6 flex flex-col transition-all duration-300 hover:translate-y-[-2px] hover:shadow-xl hover:shadow-brand-500/5">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-slate-400">{title}</span>
-        <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-brand-400">
-          <Icon className="w-5 h-5" />
+    <div
+      onClick={onClick}
+      className={`th-surface rounded-2xl p-6 flex flex-col transition-all duration-200 ${
+        onClick ? 'cursor-pointer hover:shadow-lg hover:-translate-y-0.5' : ''
+      }`}
+      style={{ '--hover-shadow': 'var(--shadow-lg)' }}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+          {title}
+        </span>
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center"
+          style={{ backgroundColor: 'var(--accent-soft)', color: 'var(--accent)' }}
+        >
+          <Icon className="w-4 h-4" />
         </div>
       </div>
-      
-      <div className="mt-4 flex items-baseline gap-2">
-        <span className="text-3xl font-bold text-white tracking-tight">{value}</span>
+
+      <div className="flex items-baseline gap-2 mb-2">
+        <span className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          {value}
+        </span>
         {trend && (
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-            trendType === 'up' 
-              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' 
-              : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+          <span className={`inline-flex items-center gap-0.5 text-xs font-semibold px-2 py-0.5 rounded-full ${
+            isUp
+              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+              : 'bg-red-500/10 text-red-600 dark:text-red-400'
           }`}>
+            {isUp ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
             {trend}
           </span>
         )}
       </div>
 
       {description && (
-        <span className="mt-2 text-xs text-slate-500">{description}</span>
+        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{description}</span>
       )}
     </div>
   );

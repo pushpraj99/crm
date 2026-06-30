@@ -18,13 +18,18 @@ const getLeads = async (req, res, next) => {
 const createLead = async (req, res, next) => {
   try {
     const { name, email, phone, source, status, assignedTo, customerId } = req.body;
+    
+    // Check role permission
+    const isPrivileged = req.user && (req.user.role === 'admin' || req.user.role === 'manager');
+    const finalAssignedTo = isPrivileged ? assignedTo : '';
+
     const lead = await Lead.create({
       name,
       email,
       phone,
       source,
       status,
-      assignedTo,
+      assignedTo: finalAssignedTo,
       customerId: customerId || null
     });
 
@@ -37,6 +42,15 @@ const createLead = async (req, res, next) => {
       });
     }
 
+    try {
+      const { createNotification } = require('./notificationController');
+      if (req.user) {
+        await createNotification(req.user._id, 'Lead Created', `Lead "${name}" created.`, 'info');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
     sendSuccess(res, lead, 'Lead created successfully', 201);
   } catch (error) {
     next(error);
@@ -46,10 +60,18 @@ const createLead = async (req, res, next) => {
 // Update lead (status/details)
 const updateLead = async (req, res, next) => {
   try {
-    const { status } = req.body;
+    const { status, assignedTo } = req.body;
     const oldLead = await Lead.findById(req.params.id);
     if (!oldLead) {
       return sendError(res, 'Lead not found', 404);
+    }
+
+    // Role check if attempting to change assignment
+    if (assignedTo !== undefined && assignedTo !== oldLead.assignedTo) {
+      const isPrivileged = req.user && (req.user.role === 'admin' || req.user.role === 'manager');
+      if (!isPrivileged) {
+        return sendError(res, 'Only Admin and Manager roles can assign or change agents on leads', 403);
+      }
     }
 
     const lead = await Lead.findByIdAndUpdate(
@@ -66,6 +88,19 @@ const updateLead = async (req, res, next) => {
         customerId: lead.customerId,
         performedBy: 'System'
       });
+    }
+
+    try {
+      const { createNotification } = require('./notificationController');
+      if (req.user) {
+        if (status && status !== oldLead.status) {
+          await createNotification(req.user._id, 'Lead Status Updated', `Lead "${lead.name}" status updated to ${status}.`, 'info');
+        } else if (assignedTo && assignedTo !== oldLead.assignedTo) {
+          await createNotification(req.user._id, 'Lead Agent Assigned', `Lead "${lead.name}" assigned to agent: ${assignedTo}.`, 'info');
+        }
+      }
+    } catch (e) {
+      console.error(e);
     }
 
     sendSuccess(res, lead, 'Lead updated successfully');

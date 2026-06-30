@@ -76,6 +76,15 @@ const createCustomer = async (req, res, next) => {
       performedBy: 'System'
     });
 
+    try {
+      const { createNotification } = require('./notificationController');
+      if (req.user) {
+        await createNotification(req.user._id, 'Customer Created', `Customer "${name}" was created successfully.`, 'success');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
     sendSuccess(res, customer, 'Customer created successfully', 201);
   } catch (error) {
     next(error);

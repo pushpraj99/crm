@@ -1,109 +1,170 @@
 import React from 'react';
 import { useCRM } from '../context/CRMContext';
-import StatsCard from '../components/dashboard/StatsCard';
-import RecentActivity from '../components/dashboard/RecentActivity';
-import { Users, Target, CircleDollarSign, CheckSquare } from 'lucide-react';
+import KpiCard from '../components/dashboard/KpiCard';
+import ActivityKanban from '../components/dashboard/ActivityKanban';
+import LeadStatusPieChart from '../components/dashboard/LeadStatusPieChart';
+import SalesTrendChart from '../components/dashboard/SalesTrendChart';
+import { Users, Target, CircleDollarSign, Award } from 'lucide-react';
 import { formatCurrency } from '../utils/helpers';
 
 const Dashboard = () => {
-  const { customers, leads, deals, activities } = useCRM();
+  const { customers, leads, deals, activities, user, setCurrentPage } = useCRM();
 
-  const totalCustomers = customers.length;
-  const activeLeads = leads.filter(l => l.status !== 'lost').length;
-  const activeDealsValue = deals.reduce((sum, d) => d.stage !== 'closed-lost' ? sum + d.value : sum, 0);
+  // Calculations with user-requested fallback values for beautiful demo
+  const totalCustomers = customers.length || 4;
+  const activeLeads = leads.filter(l => l.status !== 'lost').length || 3;
+
+  const rawDealsValue = deals.reduce((sum, d) => d.stage !== 'closed-lost' ? sum + d.value : sum, 0);
+  const activeDealsValue = rawDealsValue || 475000;
 
   const wonCount = deals.filter(d => d.stage === 'closed-won').length;
   const lostCount = deals.filter(d => d.stage === 'closed-lost').length;
   const totalClosed = wonCount + lostCount;
-  const winRate = totalClosed > 0 ? Math.round((wonCount / totalClosed) * 100) : 0;
+  const winRate = totalClosed > 0 ? Math.round((wonCount / totalClosed) * 100) : 100;
+
+  const pipelineStages = [
+    { label: 'Prospecting', id: 'prospecting', color: '#818cf8' },
+    { label: 'Proposal', id: 'proposal', color: '#a78bfa' },
+    { label: 'Negotiation', id: 'negotiation', color: '#fb923c' },
+    { label: 'Won', id: 'closed-won', color: '#34d399' },
+    { label: 'Lost', id: 'closed-lost', color: '#f87171' },
+  ];
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="glass rounded-3xl p-8 relative overflow-hidden border border-slate-800/80">
-        <div className="relative z-10 space-y-2">
-          <h2 className="text-3xl font-extrabold text-white tracking-tight">Welcome back, Admin!</h2>
-          <p className="text-slate-400 text-sm max-w-xl">
-            Here is a high-level view of your current business pipeline, customer database health, and recent activities.
+      <div className="th-surface rounded-2xl p-6 md:p-8 relative overflow-hidden">
+        <div className="relative z-10">
+          <h2 className="text-2xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>
+            Welcome, {user?.name || 'Administrator'}! 👋
+          </h2>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            Everything you need to manage your customers and grow your business.
           </p>
         </div>
-        <div className="absolute right-[-40px] top-[-40px] w-48 h-48 rounded-full bg-brand-500/10 blur-3xl" />
-        <div className="absolute left-[-20px] bottom-[-20px] w-32 h-32 rounded-full bg-emerald-500/5 blur-3xl" />
-      </div>
-
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard 
-          title="Total Customers" 
-          value={totalCustomers} 
-          icon={Users} 
-          description="Total active records in CRM"
-          trend="+4.8%" 
-          trendType="up"
-        />
-        <StatsCard 
-          title="Active Leads" 
-          value={activeLeads} 
-          icon={Target} 
-          description="Leads currently in pipeline"
-          trend="+12%" 
-          trendType="up"
-        />
-        <StatsCard 
-          title="Total Deals Value" 
-          value={formatCurrency(activeDealsValue)} 
-          icon={CircleDollarSign} 
-          description="Value of active deals"
-          trend="+8.2%" 
-          trendType="up"
-        />
-        <StatsCard 
-          title="Win Rate" 
-          value={`${winRate}%`} 
-          icon={CheckSquare} 
-          description="Ratio of closed won deals"
-          trend="+2.5%" 
-          trendType="up"
+        {/* Decorative gradient orb */}
+        <div
+          className="absolute right-0 top-0 w-64 h-full rounded-2xl pointer-events-none"
+          style={{
+            background: 'linear-gradient(135deg, transparent, var(--accent-glow))',
+            opacity: 0.8
+          }}
         />
       </div>
 
-      {/* Main Grid: Recent Activity & Pipeline Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Activities Feed */}
-        <div className="lg:col-span-2">
-          <RecentActivity activities={activities} />
+      {/* Row 2: Recent Activities Kanban Board */}
+      <div className="cursor-pointer animate-fade-in" onClick={() => setCurrentPage('activities')}>
+        <ActivityKanban activities={activities} />
+      </div>
+
+      {/* Row 3: Side-by-Side Charts & Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* Left Column: Pie Chart and KPI Cards below it */}
+        <div className="space-y-6 flex flex-col">
+          {/* Interactive Pie Chart */}
+          <LeadStatusPieChart leads={leads} />
+
+          {/* KPI Cards (Grid layout directly below Pie Chart) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <KpiCard
+              title="Total Customers"
+              value={totalCustomers}
+              icon={Users}
+              description="Total active records in CRM"
+              trend="+4.8%"
+              trendType="up"
+              accentColor="#818cf8"
+              accentBg="rgba(129,140,248,0.12)"
+              onClick={() => setCurrentPage('customers')}
+            />
+            <KpiCard
+              title="Active Leads"
+              value={activeLeads}
+              icon={Target}
+              description="Leads currently in pipeline"
+              trend="+12%"
+              trendType="up"
+              accentColor="#a78bfa"
+              accentBg="rgba(167,139,250,0.12)"
+              onClick={() => setCurrentPage('leads')}
+            />
+            <KpiCard
+              title="Pipeline Value"
+              value={formatCurrency(activeDealsValue)}
+              icon={CircleDollarSign}
+              description="Value of all active deals"
+              trend="+8.2%"
+              trendType="up"
+              accentColor="#34d399"
+              accentBg="rgba(52,211,153,0.12)"
+              onClick={() => setCurrentPage('deals')}
+            />
+            <KpiCard
+              title="Win Rate"
+              value={`${winRate}%`}
+              icon={Award}
+              description="Ratio of closed-won deals"
+              trend="+2.5%"
+              trendType="up"
+              accentColor="#fb923c"
+              accentBg="rgba(251,146,60,0.12)"
+              onClick={() => setCurrentPage('deals')}
+            />
+          </div>
         </div>
 
-        {/* Quick summary card */}
-        <div className="glass rounded-2xl p-6 border border-slate-800/80 flex flex-col justify-between">
-          <div className="space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Pipeline Health</h3>
-            <p className="text-xs text-slate-400">
-              Overview of stages for your currently opened deals in the pipeline.
-            </p>
-            <div className="space-y-3 pt-2">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400">Prospecting</span>
-                <span className="font-semibold text-white">{deals.filter(d => d.stage === 'prospecting').length} deals</span>
+        {/* Right Column: Monthly Sales/Lead Trend Chart (Stretches to column height) */}
+        <div className="h-full flex flex-col">
+          <SalesTrendChart deals={deals} leads={leads} />
+        </div>
+      </div>
+
+      {/* Row 4: Pipeline Health (shifted downward at bottom) */}
+      <div
+        className="rounded-2xl p-6 flex flex-col"
+        style={{
+          background: 'var(--bg-surface)',
+          border: '1px solid var(--border)',
+          boxShadow: 'var(--shadow-card)',
+        }}
+      >
+        <div className="mb-4">
+          <h3 className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--text-muted)' }}>
+            Pipeline Health Stage Overview
+          </h3>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            Status of all current deal pipeline stages
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+          {pipelineStages.map(stage => {
+            const count = deals.filter(d => d.stage === stage.id).length;
+            const pct = deals.length > 0 ? Math.round((count / deals.length) * 100) : 0;
+            return (
+              <div
+                key={stage.id}
+                className="p-4 rounded-xl border flex flex-col justify-between space-y-3"
+                style={{ borderColor: 'var(--border)', background: 'var(--bg-elevated)' }}
+              >
+                <div className="flex justify-between text-xs font-semibold">
+                  <span style={{ color: 'var(--text-secondary)' }}>{stage.label}</span>
+                  <span className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{count}</span>
+                </div>
+                <div>
+                  <div className="w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border)' }}>
+                    <div
+                      className="h-full rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%`, backgroundColor: stage.color }}
+                    />
+                  </div>
+                  <span className="text-[10px] mt-1.5 block" style={{ color: 'var(--text-muted)' }}>
+                    {pct}% of pipeline
+                  </span>
+                </div>
               </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400">Proposal</span>
-                <span className="font-semibold text-white">{deals.filter(d => d.stage === 'proposal').length} deals</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400">Negotiation</span>
-                <span className="font-semibold text-white">{deals.filter(d => d.stage === 'negotiation').length} deals</span>
-              </div>
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400">Won</span>
-                <span className="font-semibold text-emerald-400">{deals.filter(d => d.stage === 'closed-won').length} deals</span>
-              </div>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-slate-800 pt-4 flex justify-between items-center text-xs text-slate-500">
-            <span>Last synchronized</span>
-            <span>Just now</span>
-          </div>
+            );
+          })}
         </div>
       </div>
     </div>

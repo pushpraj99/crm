@@ -23,10 +23,16 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // API Routes
-app.use('/api/customers', require('./routes/customerRoutes'));
-app.use('/api/leads', require('./routes/leadRoutes'));
-app.use('/api/deals', require('./routes/dealRoutes'));
-app.use('/api/activities', require('./routes/activityRoutes'));
+app.use('/api/auth', require('./routes/authRoutes'));
+
+const { protect } = require('./middleware/auth');
+app.use('/api/customers',  protect, require('./routes/customerRoutes'));
+app.use('/api/leads',      protect, require('./routes/leadRoutes'));
+app.use('/api/deals',      protect, require('./routes/dealRoutes'));
+app.use('/api/activities', protect, require('./routes/activityRoutes'));
+app.use('/api/settings',   protect, require('./routes/settingsRoutes'));
+app.use('/api/notifications', protect, require('./routes/notificationRoutes'));
+
 
 // Status endpoint
 app.get('/api/health', (req, res) => {
