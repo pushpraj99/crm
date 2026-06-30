@@ -30,7 +30,7 @@ const Sidebar = () => {
           <TrendingUp className="w-5 h-5 text-white" />
         </div>
         <span className="font-semibold text-lg bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent tracking-wide">
-          Aegis CRM
+          Smart CRM
         </span>
       </div>
 
@@ -64,7 +64,7 @@ const Sidebar = () => {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-white truncate">Admin User</p>
-            <p className="text-xs text-slate-500 truncate">admin@aegiscrm.com</p>
+            <p className="text-xs text-slate-500 truncate">admin@smartcrm.com</p>
           </div>
         </div>
       </div>
