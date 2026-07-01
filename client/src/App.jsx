@@ -12,7 +12,7 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 
 const AppContent = () => {
-  const { currentPage, isAuthenticated, authLoading } = useCRM();
+  const { currentPage, isAuthenticated, authLoading, user } = useCRM();
 
   if (authLoading) {
     return (
@@ -35,14 +35,20 @@ const AppContent = () => {
     return <Landing />;
   }
 
+  const isAdminUser = user?.role === 'admin' || user?.role === 'manager';
+
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
         return <Dashboard />;
+
+      // ── Admin-only pages: redirect staff to their dashboard ──
       case 'customers':
-        return <Customers />;
+        return isAdminUser ? <Customers /> : <Dashboard />;
       case 'customer-details':
-        return <CustomerDetails />;
+        return isAdminUser ? <CustomerDetails /> : <Dashboard />;
+
+      // ── Shared pages: data is already role-filtered per component ──
       case 'leads':
         return <Leads />;
       case 'deals':
