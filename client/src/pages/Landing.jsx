@@ -54,17 +54,17 @@ const Landing = () => {
             {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-brand-600" />}
           </button>
           <button
-            onClick={() => setCurrentPage('login')}
+            onClick={() => setCurrentPage('login-agent')}
             className="text-sm font-medium px-4 py-2 rounded-xl transition-colors"
             style={{ color: 'var(--text-secondary)' }}
           >
-            Sign In
+            Agent Portal
           </button>
           <button
-            onClick={() => setCurrentPage('login')}
+            onClick={() => setCurrentPage('login-admin')}
             className="text-sm font-semibold px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white shadow-sm transition-colors"
           >
-            Get Started
+            Admin Portal
           </button>
         </nav>
       </header>
@@ -84,10 +84,17 @@ const Landing = () => {
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
-              onClick={() => setCurrentPage('login')}
+              onClick={() => setCurrentPage('login-agent')}
               className="inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-brand-600 hover:bg-brand-500 text-white font-semibold rounded-xl shadow-lg shadow-brand-600/15 transition-all duration-200 hover:-translate-y-0.5"
             >
-              Start for Free <ArrowRight className="w-4 h-4" />
+              Agent Portal <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setCurrentPage('login-admin')}
+              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl border font-semibold transition-all duration-200 hover:-translate-y-0.5"
+              style={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+            >
+              Admin Portal
             </button>
           </div>
         </section>
@@ -147,12 +154,21 @@ const Landing = () => {
             <p className="mb-8 text-sm" style={{ color: 'var(--text-secondary)' }}>
               Start building customer relationships, logging deals, and tracking your pipeline in seconds.
             </p>
-            <button
-              onClick={() => setCurrentPage('login')}
-              className="px-8 py-3 font-bold rounded-xl bg-brand-600 hover:bg-brand-500 text-white shadow-lg transition-colors"
-            >
-              Create Free Account
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => setCurrentPage('login-agent')}
+                className="px-8 py-3 font-bold rounded-xl bg-brand-600 hover:bg-brand-500 text-white shadow-lg transition-colors"
+              >
+                Agent Portal
+              </button>
+              <button
+                onClick={() => setCurrentPage('login-admin')}
+                className="px-8 py-3 font-bold rounded-xl border transition-colors"
+                style={{ backgroundColor: 'var(--bg-elevated)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+              >
+                Admin Portal
+              </button>
+            </div>
           </div>
         </section>
       </main>

@@ -26,8 +26,11 @@ const AppContent = () => {
   }
 
   if (!isAuthenticated) {
-    if (currentPage === 'login') {
-      return <Login />;
+    if (currentPage === 'login-admin') {
+      return <Login portal="admin" />;
+    }
+    if (currentPage === 'login-agent' || currentPage === 'login') {
+      return <Login portal="agent" />;
     }
     return <Landing />;
   }

@@ -186,38 +186,58 @@ export const CRMProvider = ({ children }) => {
     checkAuth();
   }, []);
 
-  const loginUser = async (email, password) => {
+  const loginUser = async (email, password, portalType = 'agent') => {
     try {
       setLoading(true); setError(null);
       const res = await authService.login(email, password);
       if (res.success) {
+        const loggedInUser = res.data;
+        const isAdminOrManager = loggedInUser.role === 'admin' || loggedInUser.role === 'manager';
+
+        if (portalType === 'admin' && !isAdminOrManager) {
+          throw new Error('Access Denied: Standard staff/agents cannot log in via the Admin Portal.');
+        }
+        if (portalType === 'agent' && isAdminOrManager) {
+          throw new Error('Access Denied: Admin and Manager accounts must log in via the Admin Portal.');
+        }
+
         localStorage.setItem('token', res.token);
-        setUser(res.data);
+        setUser(loggedInUser);
         setIsAuthenticated(true);
         setCurrentPage('dashboard');
         await loadAllData();
       }
       return res;
     } catch (err) {
-      const errMsg = err.response?.data?.message || 'Login failed';
+      const errMsg = err.response?.data?.message || err.message || 'Login failed';
       setError(errMsg); throw new Error(errMsg);
     } finally { setLoading(false); }
   };
 
-  const registerUser = async (name, email, password) => {
+  const registerUser = async (name, email, password, portalType = 'agent') => {
     try {
       setLoading(true); setError(null);
       const res = await authService.register(name, email, password);
       if (res.success) {
+        const registeredUser = res.data;
+        const isAdminOrManager = registeredUser.role === 'admin' || registeredUser.role === 'manager';
+
+        if (portalType === 'admin' && !isAdminOrManager) {
+          throw new Error('Access Denied: Registered as Agent. Standard staff/agents cannot log in via the Admin Portal.');
+        }
+        if (portalType === 'agent' && isAdminOrManager) {
+          throw new Error('Access Denied: Registered as Admin. Admin and Manager accounts must log in via the Admin Portal.');
+        }
+
         localStorage.setItem('token', res.token);
-        setUser(res.data);
+        setUser(registeredUser);
         setIsAuthenticated(true);
         setCurrentPage('dashboard');
         await loadAllData();
       }
       return res;
     } catch (err) {
-      const errMsg = err.response?.data?.message || 'Registration failed';
+      const errMsg = err.response?.data?.message || err.message || 'Registration failed';
       setError(errMsg); throw new Error(errMsg);
     } finally { setLoading(false); }
   };
