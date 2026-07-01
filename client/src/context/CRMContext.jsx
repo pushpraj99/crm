@@ -219,18 +219,8 @@ export const CRMProvider = ({ children }) => {
       setLoading(true); setError(null);
       const res = await authService.register(name, email, password);
       if (res.success) {
-        const registeredUser = res.data;
-        const isAdminOrManager = registeredUser.role === 'admin' || registeredUser.role === 'manager';
-
-        if (portalType === 'admin' && !isAdminOrManager) {
-          throw new Error('Access Denied: Registered as Agent. Standard staff/agents cannot log in via the Admin Portal.');
-        }
-        if (portalType === 'agent' && isAdminOrManager) {
-          throw new Error('Access Denied: Registered as Admin. Admin and Manager accounts must log in via the Admin Portal.');
-        }
-
         localStorage.setItem('token', res.token);
-        setUser(registeredUser);
+        setUser(res.data);
         setIsAuthenticated(true);
         setCurrentPage('dashboard');
         await loadAllData();
