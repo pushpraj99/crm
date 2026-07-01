@@ -1,14 +1,23 @@
 import React, { useState } from 'react';
 import { useLeads } from '../../hooks/useLeads';
+import { useCRM } from '../../context/CRMContext';
 import LeadCard from './LeadCard';
 import { Search, Plus, Filter } from 'lucide-react';
 
 const LeadList = ({ onAddLead, onEditLead, onDeleteLead }) => {
   const { leads, loading } = useLeads();
+  const { user } = useCRM();
   const [searchTerm, setSearchTerm] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
 
-  const filteredLeads = leads.filter(lead => {
+  const isStaff = user?.role === 'agent' || user?.role === 'viewer';
+
+  // Filter leads first if user is standard staff
+  const targetLeads = isStaff
+    ? leads.filter(l => l.assignedTo && user?.name && l.assignedTo.trim().toLowerCase() === user.name.trim().toLowerCase())
+    : leads;
+
+  const filteredLeads = targetLeads.filter(lead => {
     const matchesSearch = lead.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
       (lead.email && lead.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (lead.assignedTo && lead.assignedTo.toLowerCase().includes(searchTerm.toLowerCase()));

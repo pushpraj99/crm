@@ -6,7 +6,7 @@ import { Search, Plus, SlidersHorizontal } from 'lucide-react';
 import { confirmAction } from '../utils/alerts';
 
 const Activities = () => {
-  const { activities, logActivity, deleteActivity, loading } = useCRM();
+  const { activities, logActivity, deleteActivity, loading, user } = useCRM();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
@@ -14,8 +14,15 @@ const Activities = () => {
   
   const [showLogForm, setShowLogForm] = useState(false);
 
+  const isStaff = user?.role === 'agent' || user?.role === 'viewer';
+
+  // Filter activities first if user is standard staff
+  const targetActivities = isStaff
+    ? activities.filter(act => act.performedBy && user?.name && act.performedBy.trim().toLowerCase() === user.name.trim().toLowerCase())
+    : activities;
+
   // Filters logic
-  const filteredActivities = activities.filter(act => {
+  const filteredActivities = targetActivities.filter(act => {
     const descMatch = (act.description || '').toLowerCase().includes(searchTerm.toLowerCase());
     const titleMatch = (act.title || '').toLowerCase().includes(searchTerm.toLowerCase());
     const userMatch = (act.performedBy || '').toLowerCase().includes(searchTerm.toLowerCase());

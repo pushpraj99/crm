@@ -40,7 +40,7 @@ const StaffDashboard = () => {
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
 
-  /* ────────── Filter logic for user's assigned leads ────────── */
+  /* ────────── Filter logic for user's assigned leads, deals, activities ────────── */
   const myLeads = leads.filter(l => 
     l.assignedTo && 
     user?.name && 
@@ -48,18 +48,29 @@ const StaffDashboard = () => {
   );
   const myActiveLeads = myLeads.filter(l => l.status !== 'lost');
 
-  /* ────────── Resolve KPI values ────────── */
-  const kpi = stats?.kpi;
-  const totalCustomers   = kpi?.totalCustomers   ?? customers.length ?? 0;
+  const myDeals = deals.filter(d => 
+    d.assignedTo && 
+    user?.name && 
+    d.assignedTo.trim().toLowerCase() === user.name.trim().toLowerCase()
+  );
+
+  const myActivities = activities.filter(act => 
+    act.performedBy && 
+    user?.name && 
+    act.performedBy.trim().toLowerCase() === user.name.trim().toLowerCase()
+  );
+
+  /* ────────── Resolve KPI values (computed locally for staff data isolation) ────────── */
+  const totalCustomers   = customers.length;
   const activeLeadsVal   = myActiveLeads.length;
-  const activeDealsValue = kpi?.activeDealsValue ?? deals.reduce((s, d) => d.stage !== 'closed-lost' ? s + (d.value || 0) : s, 0);
-  const winRate          = kpi?.winRate          ?? (() => {
-    const w = deals.filter(d => d.stage === 'closed-won').length;
-    const l = deals.filter(d => d.stage === 'closed-lost').length;
+  const activeDealsValue = myDeals.reduce((s, d) => d.stage !== 'closed-lost' ? s + (d.value || 0) : s, 0);
+  const winRate          = (() => {
+    const w = myDeals.filter(d => d.stage === 'closed-won').length;
+    const l = myDeals.filter(d => d.stage === 'closed-lost').length;
     return (w + l) > 0 ? Math.round((w / (w + l)) * 100) : 0;
   })();
 
-  const pipelineStages = stats?.pipelineHealth ?? [
+  const pipelineStages = [
     { id: 'prospecting', label: 'Prospecting', color: '#818cf8', count: 0, pct: 0 },
     { id: 'proposal', label: 'Proposal', color: '#a78bfa', count: 0, pct: 0 },
     { id: 'negotiation', label: 'Negotiation', color: '#fb923c', count: 0, pct: 0 },
@@ -68,10 +79,9 @@ const StaffDashboard = () => {
   ];
 
   const resolvedPipeline = pipelineStages.map(stage => {
-    if (stats?.pipelineHealth) return stage;
-    const stagDeals = deals.filter(d => d.stage === stage.id);
+    const stagDeals = myDeals.filter(d => d.stage === stage.id);
     const count = stagDeals.length;
-    const pct = deals.length > 0 ? Math.round((count / deals.length) * 100) : 0;
+    const pct = myDeals.length > 0 ? Math.round((count / myDeals.length) * 100) : 0;
     return { ...stage, count, pct };
   });
 
@@ -118,7 +128,7 @@ const StaffDashboard = () => {
       <div className="cursor-pointer animate-fade-in" onClick={() => setCurrentPage('activities')}>
         {loading
           ? <Skeleton className="h-60 w-full" />
-          : <ActivityKanban activities={activities} />
+          : <ActivityKanban activities={myActivities} />
         }
       </div>
 
@@ -129,7 +139,7 @@ const StaffDashboard = () => {
         <div className="space-y-6 flex flex-col">
           {loading
             ? <Skeleton className="h-80 w-full" />
-            : <LeadStatusPieChart leads={leads} data={stats?.leadStatusDistribution} />
+            : <LeadStatusPieChart leads={myLeads} />
           }
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

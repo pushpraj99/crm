@@ -1,13 +1,22 @@
 import React, { useState } from 'react';
 import { useDeals } from '../../hooks/useDeals';
+import { useCRM } from '../../context/CRMContext';
 import DealKanban from './DealKanban';
 import { Search, Plus } from 'lucide-react';
 
 const DealList = ({ onAddDeal, onEditDeal, onDeleteDeal }) => {
   const { deals, loading } = useDeals();
+  const { user } = useCRM();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredDeals = deals.filter(deal => {
+  const isStaff = user?.role === 'agent' || user?.role === 'viewer';
+
+  // Filter deals first if user is standard staff
+  const targetDeals = isStaff
+    ? deals.filter(d => d.assignedTo && user?.name && d.assignedTo.trim().toLowerCase() === user.name.trim().toLowerCase())
+    : deals;
+
+  const filteredDeals = targetDeals.filter(deal => {
     const titleMatch = deal.title.toLowerCase().includes(searchTerm.toLowerCase());
     const customerMatch = deal.customerId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || false;
     return titleMatch || customerMatch;

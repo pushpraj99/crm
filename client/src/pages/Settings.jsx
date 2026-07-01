@@ -330,9 +330,9 @@ const Settings = () => {
     { id: 'profile',  label: 'Profile',        icon: User },
     { id: 'team',     label: 'Team & Users',    icon: Users, adminOnly: true },
     { id: 'security', label: 'Security',        icon: Shield },
-    { id: 'logs',     label: 'Activity Logs',   icon: History },
-    { id: 'data',     label: 'Data Management', icon: Database },
-    { id: 'smtp',     label: 'SMTP Settings',   icon: Mail },
+    { id: 'logs',     label: 'Activity Logs',   icon: History, adminOnly: true },
+    { id: 'data',     label: 'Data Management', icon: Database, adminOnly: true },
+    { id: 'smtp',     label: 'SMTP Settings',   icon: Mail, adminOnly: true },
   ].filter(t => !t.adminOnly || authUser?.role === 'admin' || authUser?.role === 'manager');
 
   const isAdmin = authUser?.role === 'admin';
