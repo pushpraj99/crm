@@ -32,32 +32,35 @@ const LeadList = ({ onAddLead, onEditLead, onDeleteLead }) => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Search and Filters */}
-      <div className="glass rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-800/80">
+      <div className="th-surface rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 border th-border">
         <div className="relative w-full md:w-96">
-          <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" style={{ color: 'var(--text-muted)' }} />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search leads by name, email, agent..."
-            className="w-full bg-slate-950/60 border border-slate-800 focus:border-brand-500 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+            className="w-full rounded-xl pl-10 pr-4 py-2 text-sm font-medium outline-none th-input"
           />
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto justify-end">
           {/* Source filter */}
-          <div className="flex items-center gap-2 bg-slate-950/40 border border-slate-800 rounded-xl px-3 py-1.5">
-            <Filter className="w-4 h-4 text-slate-500" />
+          <div 
+            className="flex items-center gap-2 border th-border rounded-xl px-3 py-1.5"
+            style={{ backgroundColor: 'var(--bg-elevated)' }}
+          >
+            <Filter className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
             <select
               value={sourceFilter}
               onChange={(e) => setSourceFilter(e.target.value)}
-              className="bg-transparent text-sm text-slate-300 focus:outline-none cursor-pointer"
+              className="bg-transparent text-sm th-text-secondary focus:outline-none cursor-pointer"
             >
-              <option value="" className="bg-slate-900">All Sources</option>
-              <option value="web" className="bg-slate-900">Web</option>
-              <option value="referral" className="bg-slate-900">Referral</option>
-              <option value="cold-call" className="bg-slate-900">Cold Call</option>
-              <option value="social" className="bg-slate-900">Social</option>
+              <option value="">All Sources</option>
+              <option value="web">Web</option>
+              <option value="referral">Referral</option>
+              <option value="cold-call">Cold Call</option>
+              <option value="social">Social</option>
             </select>
           </div>
 
@@ -72,11 +75,11 @@ const LeadList = ({ onAddLead, onEditLead, onDeleteLead }) => {
       </div>
 
       {loading ? (
-        <div className="flex justify-center items-center py-20 text-slate-400 text-sm">
+        <div className="flex justify-center items-center py-20 th-text-muted text-sm">
           Loading leads...
         </div>
       ) : leads.length === 0 ? (
-        <div className="glass rounded-2xl p-12 text-center text-slate-500 text-sm border border-slate-800/80">
+        <div className="th-surface rounded-2xl p-12 text-center th-text-secondary text-sm border th-border">
           No leads registered. Click "Add Lead" to get started!
         </div>
       ) : (
@@ -87,11 +90,11 @@ const LeadList = ({ onAddLead, onEditLead, onDeleteLead }) => {
             return (
               <div key={status} className="flex flex-col gap-4">
                 {/* Column Title */}
-                <div className="flex items-center justify-between border-b border-slate-800 pb-2 px-1">
-                  <span className="text-sm font-bold text-slate-200 capitalize">
+                <div className="flex items-center justify-between border-b th-border pb-2 px-1">
+                  <span className="text-sm font-bold th-text-primary capitalize">
                     {statusDisplayNames[status]}
                   </span>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-855 text-slate-400 border border-slate-700/50">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded th-badge-accent">
                     {statusLeads.length}
                   </span>
                 </div>
@@ -99,7 +102,7 @@ const LeadList = ({ onAddLead, onEditLead, onDeleteLead }) => {
                 {/* Column Items */}
                 <div className="space-y-4 max-h-[600px] overflow-y-auto pr-1">
                   {statusLeads.length === 0 ? (
-                    <div className="border border-dashed border-slate-800 rounded-xl p-6 text-center text-xs text-slate-600">
+                    <div className="border border-dashed th-border rounded-xl p-6 text-center text-xs th-text-muted">
                       Empty
                     </div>
                   ) : (

@@ -38,7 +38,10 @@ const UserSchema = new mongoose.Schema(
       minLength:           { type: Number, default: 6 },
       requireNumbers:      { type: Boolean, default: false },
       requireSpecialChars: { type: Boolean, default: false }
-    }
+    },
+    phone:      { type: String, trim: true, default: '' },
+    department: { type: String, trim: true, default: '' },
+    bio:        { type: String, trim: true, default: '' }
   },
   { timestamps: true }
 );

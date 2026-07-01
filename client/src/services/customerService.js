@@ -24,3 +24,8 @@ export const deleteCustomer = async (id) => {
   const response = await api.delete(`/customers/${id}`);
   return response.data;
 };
+
+export const sendCustomerEmail = async (id, emailData) => {
+  const response = await api.post(`/customers/${id}/email`, emailData);
+  return response.data;
+};

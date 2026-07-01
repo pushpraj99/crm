@@ -16,15 +16,15 @@ const DealList = ({ onAddDeal, onEditDeal, onDeleteDeal }) => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Search and Action Bar */}
-      <div className="glass rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 border border-slate-800/80">
+      <div className="th-surface rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 border th-border">
         <div className="relative w-full md:w-96">
-          <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-500" style={{ color: 'var(--text-muted)' }} />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search deals by title or customer..."
-            className="w-full bg-slate-950/60 border border-slate-800 focus:border-brand-500 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all"
+            className="w-full rounded-xl pl-10 pr-4 py-2 text-sm font-medium outline-none th-input"
           />
         </div>
 

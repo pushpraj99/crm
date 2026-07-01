@@ -3,7 +3,7 @@ import { formatDate } from '../../utils/helpers';
 import { Edit2, Trash2, Calendar, Phone, Mail, FileText, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { getStatusBadgeClass } from '../../utils/helpers';
 
-const ActivityTable = ({ activities = [], onEdit, onDelete }) => {
+const ActivityTable = ({ activities = [], onDelete }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
@@ -132,13 +132,6 @@ const ActivityTable = ({ activities = [], onEdit, onDelete }) => {
                   {/* Actions */}
                   <td className="px-5 py-4 text-right">
                     <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => onEdit(act)}
-                        className="p-1.5 rounded-lg border th-border bg-slate-50 hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800 text-slate-500 hover:th-text-primary transition-colors"
-                        title="Edit Activity"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
                       <button
                         onClick={() => onDelete(act._id)}
                         className="p-1.5 rounded-lg border border-red-500/10 hover:border-red-500/30 bg-red-500/5 hover:bg-red-500/10 text-red-500 transition-colors"

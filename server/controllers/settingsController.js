@@ -2,6 +2,8 @@ const Customer = require('../models/Customer');
 const Lead     = require('../models/Lead');
 const Deal     = require('../models/Deal');
 const Activity = require('../models/Activity');
+const Settings = require('../models/Settings');
+const nodemailer = require('nodemailer');
 
 // @desc  Export all CRM data as JSON
 // @route GET /api/settings/export
@@ -120,5 +122,145 @@ exports.getStats = async (req, res) => {
     res.status(200).json({ success: true, data: { customers, leads, deals, activities } });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc  Get SMTP email settings
+// @route GET /api/settings/smtp
+exports.getSmtpSettings = async (req, res) => {
+  try {
+    const doc = await Settings.findOne({ key: 'smtp' });
+    const defaults = {
+      smtpHost: '',
+      smtpPort: 587,
+      smtpSecure: false,
+      smtpUser: '',
+      smtpPassword: '',
+      smtpFromEmail: ''
+    };
+
+    if (!doc) {
+      return res.status(200).json({ success: true, data: defaults });
+    }
+
+    // Mask password
+    const settings = { ...doc.value };
+    if (settings.smtpPassword) {
+      settings.smtpPassword = '••••••••••••••••';
+    }
+
+    res.status(200).json({ success: true, data: settings });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc  Save SMTP email settings
+// @route PUT /api/settings/smtp
+exports.saveSmtpSettings = async (req, res) => {
+  try {
+    const { smtpHost, smtpPort, smtpSecure, smtpUser, smtpPassword, smtpFromEmail } = req.body;
+    let finalPassword = smtpPassword;
+
+    const existingDoc = await Settings.findOne({ key: 'smtp' });
+
+    // Handle password masking logic
+    if (finalPassword === '••••••••••••••••' || finalPassword === '') {
+      if (existingDoc && existingDoc.value?.smtpPassword) {
+        finalPassword = existingDoc.value.smtpPassword;
+      } else {
+        finalPassword = '';
+      }
+    }
+
+    const settingsValue = {
+      smtpHost: smtpHost || '',
+      smtpPort: parseInt(smtpPort) || 587,
+      smtpSecure: smtpSecure === true,
+      smtpUser: smtpUser || '',
+      smtpPassword: finalPassword,
+      smtpFromEmail: smtpFromEmail || ''
+    };
+
+    const doc = await Settings.findOneAndUpdate(
+      { key: 'smtp' },
+      { key: 'smtp', value: settingsValue },
+      { upsert: true, new: true }
+    );
+
+    const clientSettings = { ...doc.value };
+    if (clientSettings.smtpPassword) {
+      clientSettings.smtpPassword = '••••••••••••••••';
+    }
+
+    res.status(200).json({ success: true, message: 'SMTP settings saved successfully', data: clientSettings });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// @desc  Send a test email using SMTP config
+// @route POST /api/settings/smtp/test
+exports.testSmtpSettings = async (req, res) => {
+  try {
+    const { email, settings } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Test email recipient is required' });
+    }
+
+    let smtpConfig = { ...settings };
+    
+    // Resolve password if masked
+    if (smtpConfig.smtpPassword === '••••••••••••••••' || !smtpConfig.smtpPassword) {
+      const doc = await Settings.findOne({ key: 'smtp' });
+      if (doc && doc.value?.smtpPassword) {
+        smtpConfig.smtpPassword = doc.value.smtpPassword;
+      }
+    }
+
+    // Build Transporter
+    const transporter = nodemailer.createTransport({
+      host: smtpConfig.smtpHost,
+      port: parseInt(smtpConfig.smtpPort) || 587,
+      secure: smtpConfig.smtpSecure === true,
+      auth: {
+        user: smtpConfig.smtpUser,
+        pass: smtpConfig.smtpPassword
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+
+    // Test connection
+    await transporter.verify();
+
+    // Send Test Email
+    const fromAddress = smtpConfig.smtpFromEmail || `Smart CRM <${smtpConfig.smtpUser}>`;
+    await transporter.sendMail({
+      from: fromAddress,
+      to: email,
+      subject: 'Smart CRM — SMTP Connection Test',
+      text: `Hello,\n\nThis is a test email from your Smart CRM application. Your SMTP integration is working successfully!\n\nDetails:\nHost: ${smtpConfig.smtpHost}\nPort: ${smtpConfig.smtpPort}\nUser: ${smtpConfig.smtpUser}\n\nRegards,\nSmart CRM Team`,
+      html: `<div style="font-family: sans-serif; padding: 24px; color: #1e1b4b; background-color: #f5f3ff; border-radius: 16px;">
+        <h2 style="color: #7c3aed; margin-top: 0;">Smart CRM Connection Test</h2>
+        <p>Hello,</p>
+        <p>This is a test email confirming that your <strong>Smart CRM SMTP Connection</strong> is fully operational!</p>
+        <hr style="border: 0; border-top: 1px solid #e0d9fb; margin: 20px 0;" />
+        <ul style="list-style: none; padding: 0;">
+          <li><strong>Host:</strong> ${smtpConfig.smtpHost}</li>
+          <li><strong>Port:</strong> ${smtpConfig.smtpPort}</li>
+          <li><strong>Secure:</strong> ${smtpConfig.smtpSecure ? 'SSL/TLS' : 'StartTLS'}</li>
+          <li><strong>User:</strong> ${smtpConfig.smtpUser}</li>
+        </ul>
+        <hr style="border: 0; border-top: 1px solid #e0d9fb; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #8b83c4;">This is an automated system email. Please do not reply directly.</p>
+      </div>`
+    });
+
+    res.status(200).json({ success: true, message: `Test email sent successfully to ${email}` });
+  } catch (error) {
+    res.status(500).json({ success: false, message: `SMTP verification failed: ${error.message}` });
   }
 };

@@ -6,7 +6,8 @@ const {
   createCustomer,
   getCustomerById,
   updateCustomer,
-  deleteCustomer
+  deleteCustomer,
+  sendCustomerEmail
 } = require('../controllers/customerController');
 
 router.route('/')
@@ -17,5 +18,8 @@ router.route('/:id')
   .get(getCustomerById)
   .put(updateCustomer)
   .delete(deleteCustomer);
+
+// Send email to a specific customer
+router.post('/:id/email', sendCustomerEmail);
 
 module.exports = router;

@@ -27,6 +27,10 @@ const DealSchema = new mongoose.Schema(
     },
     notes: { 
       type: String 
+    },
+    assignedTo: {
+      type: String,
+      default: ''
     }
   },
   {

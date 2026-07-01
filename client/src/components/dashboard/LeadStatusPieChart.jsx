@@ -60,22 +60,33 @@ const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent
   );
 };
 
-const LeadStatusPieChart = ({ leads = [] }) => {
-  const statusCounts = leads.reduce((acc, lead) => {
-    const status = lead.status || 'new';
-    acc[status] = (acc[status] || 0) + 1;
-    return acc;
-  }, {});
+const LeadStatusPieChart = ({ leads = [], data: preGroupedData }) => {
+  const chartData = React.useMemo(() => {
+    if (preGroupedData && preGroupedData.length > 0) {
+      return preGroupedData
+        .filter(item => item.count > 0)
+        .map(item => ({
+          name: LABEL_MAP[item.status] || item.status,
+          value: item.count,
+          fill: COLORS[item.status] || '#94a3b8'
+        }));
+    }
+    const statusCounts = leads.reduce((acc, lead) => {
+      const status = lead.status || 'new';
+      acc[status] = (acc[status] || 0) + 1;
+      return acc;
+    }, {});
 
-  const data = Object.entries(statusCounts)
-    .filter(([, count]) => count > 0)
-    .map(([status, count]) => ({
-      name: LABEL_MAP[status] || status,
-      value: count,
-      fill: COLORS[status] || '#94a3b8',
-    }));
+    return Object.entries(statusCounts)
+      .filter(([, count]) => count > 0)
+      .map(([status, count]) => ({
+        name: LABEL_MAP[status] || status,
+        value: count,
+        fill: COLORS[status] || '#94a3b8',
+      }));
+  }, [leads, preGroupedData]);
 
-  const isEmpty = data.length === 0;
+  const isEmpty = chartData.length === 0;
 
   return (
     <div
@@ -105,7 +116,7 @@ const LeadStatusPieChart = ({ leads = [] }) => {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={data}
+                data={chartData}
                 cx="50%"
                 cy="50%"
                 innerRadius="40%"
@@ -117,7 +128,7 @@ const LeadStatusPieChart = ({ leads = [] }) => {
                 animationBegin={0}
                 animationDuration={800}
               >
-                {data.map((entry, index) => (
+                {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.fill} stroke="none" />
                 ))}
               </Pie>

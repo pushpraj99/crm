@@ -3,16 +3,16 @@ import { useCRM } from '../context/CRMContext';
 import ActivityTable from '../components/activities/ActivityTable';
 import ActivityForm from '../components/activities/ActivityForm';
 import { Search, Plus, SlidersHorizontal } from 'lucide-react';
+import { confirmAction } from '../utils/alerts';
 
 const Activities = () => {
-  const { activities, logActivity, updateActivity, deleteActivity, loading } = useCRM();
+  const { activities, logActivity, deleteActivity, loading } = useCRM();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   
   const [showLogForm, setShowLogForm] = useState(false);
-  const [editingActivity, setEditingActivity] = useState(null);
 
   // Filters logic
   const filteredActivities = activities.filter(act => {
@@ -31,17 +31,16 @@ const Activities = () => {
   });
 
   const handleOpenAdd = () => {
-    setEditingActivity(null);
-    setShowLogForm(true);
-  };
-
-  const handleOpenEdit = (act) => {
-    setEditingActivity(act);
     setShowLogForm(true);
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to permanently delete this activity log?')) {
+    const confirmed = await confirmAction(
+      'Delete Activity?',
+      'Are you sure you want to permanently delete this activity log?',
+      'Yes, delete'
+    );
+    if (confirmed) {
       try {
         await deleteActivity(id);
       } catch (err) {
@@ -52,11 +51,7 @@ const Activities = () => {
 
   const handleFormSubmit = async (data) => {
     try {
-      if (editingActivity) {
-        await updateActivity(editingActivity._id, data);
-      } else {
-        await logActivity(data);
-      }
+      await logActivity(data);
       setShowLogForm(false);
     } catch (err) {
       console.error(err);
@@ -143,7 +138,6 @@ const Activities = () => {
       {showLogForm && (
         <div className="max-w-xl mx-auto">
           <ActivityForm
-            activity={editingActivity}
             onSubmit={handleFormSubmit}
             onClose={() => setShowLogForm(false)}
           />
@@ -157,7 +151,6 @@ const Activities = () => {
       ) : (
         <ActivityTable
           activities={filteredActivities}
-          onEdit={handleOpenEdit}
           onDelete={handleDelete}
         />
       )}

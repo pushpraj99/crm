@@ -59,24 +59,22 @@ const LeadForm = ({ lead, onSubmit, onClose }) => {
     });
   };
 
-  // Only Admin and Manager can assign/change agents
-  const canAssignAgent = user?.role === 'admin' || user?.role === 'manager';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-      <div className="w-full max-w-lg th-surface border rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 p-4 bg-slate-950/80 backdrop-blur-sm">
+      <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-fade-in flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b th-border">
-          <h3 className="text-lg font-bold th-text-primary">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+          <h3 className="text-lg font-bold text-white">
             {lead ? 'Edit Lead' : 'Add New Lead'}
           </h3>
-          <button onClick={onClose} className="text-slate-400 hover:th-text-primary transition-colors">
+          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Name */}
             <div className="space-y-1 md:col-span-2">
@@ -87,9 +85,8 @@ const LeadForm = ({ lead, onSubmit, onClose }) => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="e.g. Acme Tech Solutions"
-                className={`w-full rounded-xl px-4 py-2.5 text-sm outline-none th-input ${
-                  errors.name ? 'border-rose-500/50 focus:ring-rose-500/20' : ''
-                }`}
+                className={`w-full rounded-xl px-4 py-2.5 text-sm outline-none th-input ${errors.name ? 'border-rose-500/50 focus:ring-rose-500/20' : ''
+                  }`}
               />
               {errors.name && <p className="text-xs text-rose-400 mt-1">{errors.name}</p>}
             </div>
@@ -103,9 +100,8 @@ const LeadForm = ({ lead, onSubmit, onClose }) => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="e.g. info@acmetech.com"
-                className={`w-full rounded-xl px-4 py-2.5 text-sm outline-none th-input ${
-                  errors.email ? 'border-rose-500/50 focus:ring-rose-500/20' : ''
-                }`}
+                className={`w-full rounded-xl px-4 py-2.5 text-sm outline-none th-input ${errors.email ? 'border-rose-500/50 focus:ring-rose-500/20' : ''
+                  }`}
               />
               {errors.email && <p className="text-xs text-rose-400 mt-1">{errors.email}</p>}
             </div>
@@ -155,26 +151,16 @@ const LeadForm = ({ lead, onSubmit, onClose }) => {
               </select>
             </div>
 
-            {/* Assigned To - Role-Restricted */}
+            {/* Assigned To */}
             <div className="space-y-1">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-semibold th-text-secondary">Assigned Agent</label>
-                {!canAssignAgent && (
-                  <span className="text-[9px] bg-amber-500/10 text-amber-500 px-1.5 py-0.5 rounded font-medium">
-                    Admin/Manager Only
-                  </span>
-                )}
-              </div>
+              <label className="text-xs font-semibold th-text-secondary">Assigned Agent</label>
               <input
                 type="text"
                 name="assignedTo"
                 value={formData.assignedTo}
                 onChange={handleChange}
-                disabled={!canAssignAgent}
-                placeholder={canAssignAgent ? "e.g. Agent Smith" : "Not authorized to change"}
-                className={`w-full rounded-xl px-4 py-2.5 text-sm outline-none th-input ${
-                  !canAssignAgent ? 'opacity-60 cursor-not-allowed bg-slate-100 dark:bg-slate-900/50' : ''
-                }`}
+                placeholder="e.g. Agent Smith"
+                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none th-input"
               />
             </div>
 
@@ -208,7 +194,7 @@ const LeadForm = ({ lead, onSubmit, onClose }) => {
           </div>
 
           {/* Action buttons */}
-          <div className="flex gap-3 justify-end pt-4 border-t th-border">
+          <div className="flex gap-3 justify-end pt-4 border-t border-slate-800">
             <button
               type="button"
               onClick={onClose}

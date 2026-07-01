@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDeals } from '../hooks/useDeals';
 import DealList from '../components/deals/DealList';
 import DealForm from '../components/deals/DealForm';
+import { confirmAction } from '../utils/alerts';
 
 const Deals = () => {
   const { createDeal, updateDeal, deleteDeal } = useDeals();
@@ -19,7 +20,12 @@ const Deals = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to permanently delete this deal?')) {
+    const confirmed = await confirmAction(
+      'Delete Deal?',
+      'Are you sure you want to permanently delete this deal?',
+      'Yes, delete'
+    );
+    if (confirmed) {
       try {
         await deleteDeal(id);
       } catch (err) {

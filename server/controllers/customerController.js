@@ -2,6 +2,8 @@ const Customer = require('../models/Customer');
 const Lead = require('../models/Lead');
 const Deal = require('../models/Deal');
 const Activity = require('../models/Activity');
+const Settings = require('../models/Settings');
+const nodemailer = require('nodemailer');
 const { sendSuccess, sendError } = require('../utils/responseHelper');
 
 // Get all customers (with search, status filter, and pagination)
@@ -128,6 +130,18 @@ const updateCustomer = async (req, res, next) => {
       return sendError(res, 'Customer not found', 404);
     }
 
+    // Synchronize company & name updates with cached values in associated Activities
+    if (req.body.name || req.body.company) {
+      const updateFields = {};
+      if (req.body.name) updateFields.contactName = req.body.name;
+      if (req.body.company) updateFields.company = req.body.company;
+      
+      await Activity.updateMany(
+        { customerId: customer._id },
+        { $set: updateFields }
+      );
+    }
+
     // Log update activity
     await Activity.create({
       type: 'note',
@@ -161,10 +175,80 @@ const deleteCustomer = async (req, res, next) => {
   }
 };
 
+// Send email to a customer using configured SMTP
+const sendCustomerEmail = async (req, res, next) => {
+  try {
+    const { to, subject, body, customerName } = req.body;
+
+    if (!to || !subject || !body) {
+      return sendError(res, 'Recipient, subject, and body are required', 400);
+    }
+
+    const customer = await Customer.findById(req.params.id);
+    if (!customer) return sendError(res, 'Customer not found', 404);
+
+    // Load saved SMTP config
+    const smtpDoc = await Settings.findOne({ key: 'smtp' });
+    if (!smtpDoc || !smtpDoc.value?.smtpHost) {
+      return sendError(res, 'SMTP not configured. Please set up SMTP settings first.', 422);
+    }
+    const cfg = smtpDoc.value;
+
+    const transporter = nodemailer.createTransport({
+      host: cfg.smtpHost,
+      port: parseInt(cfg.smtpPort) || 587,
+      secure: cfg.smtpSecure === true,
+      auth: { user: cfg.smtpUser, pass: cfg.smtpPassword },
+      tls: { rejectUnauthorized: false }
+    });
+
+    const fromAddress = cfg.smtpFromEmail || `Smart CRM <${cfg.smtpUser}>`;
+    const htmlBody = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1e293b;">
+        <div style="background: linear-gradient(135deg, #4f46e5, #7c3aed); padding: 20px 24px; border-radius: 12px 12px 0 0;">
+          <h2 style="color: white; margin: 0; font-size: 18px;">Message from Smart CRM</h2>
+        </div>
+        <div style="padding: 24px; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px;">
+          <p style="color: #475569; margin-top: 0;">Hello <strong>${customerName || customer.name}</strong>,</p>
+          <div style="white-space: pre-line; line-height: 1.7; color: #334155;">${body}</div>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+          <p style="font-size: 12px; color: #94a3b8; margin: 0;">This email was sent from Smart CRM. Please do not reply directly to this message.</p>
+        </div>
+      </div>
+    `;
+
+    await transporter.sendMail({
+      from: fromAddress,
+      to,
+      subject,
+      text: body,
+      html: htmlBody
+    });
+
+    // Log the email as a CRM activity
+    await Activity.create({
+      type: 'email',
+      title: `Email: ${subject}`,
+      description: body.substring(0, 200),
+      customerId: customer._id,
+      performedBy: req.user?.name || 'CRM User',
+      contactName: customer.name,
+      company: customer.company || '',
+      status: 'completed',
+      activityDate: new Date()
+    });
+
+    sendSuccess(res, { to, subject }, `Email sent successfully to ${to}`);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getCustomers,
   createCustomer,
   getCustomerById,
   updateCustomer,
-  deleteCustomer
+  deleteCustomer,
+  sendCustomerEmail
 };

@@ -5,12 +5,18 @@ const {
   exportData,
   importData,
   downloadBackup,
-  getStats
+  getStats,
+  getSmtpSettings,
+  saveSmtpSettings,
+  testSmtpSettings
 } = require('../controllers/settingsController');
 
-router.get('/export',   protect, exportData);
-router.post('/import',  protect, importData);
-router.get('/backup',   protect, downloadBackup);
-router.get('/stats',    protect, getStats);
+router.get('/export',    protect, exportData);
+router.post('/import',   protect, importData);
+router.get('/backup',    protect, downloadBackup);
+router.get('/stats',     protect, getStats);
+router.get('/smtp',      protect, getSmtpSettings);
+router.put('/smtp',      protect, saveSmtpSettings);
+router.post('/smtp/test', protect, testSmtpSettings);
 
 module.exports = router;

@@ -36,10 +36,11 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-const SalesTrendChart = ({ deals = [], leads = [] }) => {
+const SalesTrendChart = ({ deals = [], leads = [], data }) => {
   const now = new Date();
 
   const monthlyData = useMemo(() => {
+    if (data && data.length > 0) return data;
     return Array.from({ length: 6 }, (_, i) => {
       const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
       const month = d.getMonth();

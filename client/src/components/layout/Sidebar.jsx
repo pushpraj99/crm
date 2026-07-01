@@ -8,11 +8,13 @@ import {
   History, 
   Settings,
   TrendingUp,
-  LogOut
+  LogOut,
+  Crown
 } from 'lucide-react';
 
 const Sidebar = () => {
   const { currentPage, setCurrentPage, user, triggerLogout } = useCRM();
+  const isAdmin = user?.role === 'admin' || user?.role === 'manager';
 
   const menuItems = [
     { id: 'dashboard',  name: 'Dashboard',  icon: LayoutDashboard },
@@ -42,15 +44,8 @@ const Sidebar = () => {
         </span>
       </div>
 
-      {/* Nav label */}
-      <div className="px-6 pt-6 pb-2">
-        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
-          Navigation
-        </span>
-      </div>
-
       {/* Nav Menu */}
-      <nav className="flex-1 px-3 pb-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 pt-4 pb-4 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentPage === item.id || (item.id === 'customers' && currentPage === 'customer-details');
@@ -61,13 +56,8 @@ const Sidebar = () => {
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                 isActive
                   ? 'bg-brand-600 text-white shadow-md shadow-brand-600/20'
-                  : ''
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'
               }`}
-              style={!isActive ? {
-                color: 'var(--text-secondary)',
-              } : {}}
-              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.backgroundColor = 'var(--bg-hover)'; e.currentTarget.style.color = 'var(--text-primary)'; }}}
-              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.backgroundColor = ''; e.currentTarget.style.color = 'var(--text-secondary)'; }}}
             >
               <Icon className="w-4 h-4 shrink-0" />
               {item.name}
@@ -87,7 +77,12 @@ const Sidebar = () => {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{user?.name || 'User'}</p>
-            <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{user?.email || ''}</p>
+            <div className="flex items-center gap-1.5">
+              {isAdmin && <Crown className="w-3 h-3 text-amber-500" />}
+              <p className="text-xs truncate" style={{ color: isAdmin ? '#f59e0b' : 'var(--text-muted)' }}>
+                {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : ''}
+              </p>
+            </div>
           </div>
           <button
             onClick={triggerLogout}

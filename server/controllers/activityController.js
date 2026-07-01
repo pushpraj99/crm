@@ -8,15 +8,15 @@ const getActivities = async (req, res, next) => {
     const { category, priority, status, type, search, limit = 100, page = 1 } = req.query;
     const filter = {};
     if (category) filter.category = category;
-    if (priority)  filter.priority = priority;
-    if (status)    filter.status   = status;
-    if (type)      filter.type     = type;
+    if (priority) filter.priority = priority;
+    if (status) filter.status = status;
+    if (type) filter.type = type;
     if (search) {
       filter.$or = [
-        { title:       { $regex: search, $options: 'i' } },
+        { title: { $regex: search, $options: 'i' } },
         { description: { $regex: search, $options: 'i' } },
         { contactName: { $regex: search, $options: 'i' } },
-        { company:     { $regex: search, $options: 'i' } },
+        { company: { $regex: search, $options: 'i' } },
         { performedBy: { $regex: search, $options: 'i' } }
       ];
     }
@@ -51,17 +51,17 @@ const logActivity = async (req, res, next) => {
     } = req.body;
 
     const activity = await Activity.create({
-      type:        type        || 'note',
+      type: type || 'note',
       description: description || title || '',
-      customerId:  customerId  || null,
+      customerId: customerId || null,
       performedBy: performedBy || (req.user?.name) || 'System',
       performedAt: performedAt || Date.now(),
-      title:       title       || '',
-      category:    category    || 'other',
-      priority:    priority    || 'medium',
-      status:      status      || 'completed',
+      title: title || '',
+      category: category || 'other',
+      priority: priority || 'medium',
+      status: status || 'completed',
       contactName: contactName || '',
-      company:     company     || '',
+      company: company || '',
       activityDate: activityDate || Date.now()
     });
 
@@ -72,8 +72,7 @@ const logActivity = async (req, res, next) => {
   }
 };
 
-// @desc  Update an activity
-// @route PUT /api/activities/:id
+
 const updateActivity = async (req, res, next) => {
   try {
     const activity = await Activity.findByIdAndUpdate(

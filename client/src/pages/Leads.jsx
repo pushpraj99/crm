@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLeads } from '../hooks/useLeads';
 import LeadList from '../components/leads/LeadList';
 import LeadForm from '../components/leads/LeadForm';
+import { confirmAction } from '../utils/alerts';
 
 const Leads = () => {
   const { createLead, updateLead, deleteLead } = useLeads();
@@ -19,7 +20,12 @@ const Leads = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to permanently delete this lead?')) {
+    const confirmed = await confirmAction(
+      'Delete Lead?',
+      'Are you sure you want to permanently delete this lead?',
+      'Yes, delete'
+    );
+    if (confirmed) {
       try {
         await deleteLead(id);
       } catch (err) {

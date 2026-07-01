@@ -17,14 +17,15 @@ const getDeals = async (req, res, next) => {
 // Create a deal
 const createDeal = async (req, res, next) => {
   try {
-    const { title, value, stage, customerId, expectedCloseDate, notes } = req.body;
+    const { title, value, stage, customerId, expectedCloseDate, notes, assignedTo } = req.body;
     const deal = await Deal.create({
       title,
       value,
       stage,
       customerId,
       expectedCloseDate,
-      notes
+      notes,
+      assignedTo: assignedTo || (req.user?.name || '')
     });
 
     // Log creation activity

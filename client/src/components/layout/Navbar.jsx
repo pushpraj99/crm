@@ -59,15 +59,19 @@ const Navbar = () => {
       className="th-navbar h-16 border-b flex items-center justify-between px-8 sticky top-0 z-20"
       style={{ borderColor: 'var(--border)' }}
     >
-      {/* Page Title */}
-      <div>
-        <h1 className="text-lg font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
-          {getPageTitle()}
-        </h1>
-        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-          {getPageSubtitle()}
-        </p>
-      </div>
+      {/* Page Title — hidden on dashboard (it has its own welcome header) */}
+      {currentPage !== 'dashboard' ? (
+        <div>
+          <h1 className="text-lg font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>
+            {getPageTitle()}
+          </h1>
+          <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            {getPageSubtitle()}
+          </p>
+        </div>
+      ) : (
+        <div />
+      )}
 
       {/* Right Actions */}
       <div className="flex items-center gap-3">

@@ -142,6 +142,7 @@ const ActivityForm = ({ activity, customerId, onSubmit, onClose }) => {
             type="text"
             name="company"
             value={formData.company}
+            onChange={handleChange}
             placeholder="e.g. Cyberdyne Systems"
             className="w-full rounded-xl px-3.5 py-2 text-sm outline-none th-input"
           />

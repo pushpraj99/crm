@@ -21,7 +21,7 @@ const createLead = async (req, res, next) => {
     
     // Check role permission
     const isPrivileged = req.user && (req.user.role === 'admin' || req.user.role === 'manager');
-    const finalAssignedTo = isPrivileged ? assignedTo : '';
+    const finalAssignedTo = isPrivileged ? (assignedTo || '') : (req.user?.name || '');
 
     const lead = await Lead.create({
       name,

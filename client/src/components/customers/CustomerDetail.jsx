@@ -4,10 +4,11 @@ import { getCustomerById } from '../../services/customerService';
 import { getStatusBadgeClass, formatCurrency, formatDate } from '../../utils/helpers';
 import { 
   Building2, Mail, Phone, Calendar, ArrowLeft, Edit, Trash2, 
-  Plus, History, Briefcase, Target 
+  Plus, History, Briefcase, Target, Send
 } from 'lucide-react';
 import ActivityFeed from '../activities/ActivityFeed';
 import ActivityForm from '../activities/ActivityForm';
+import SendEmailModal from './SendEmailModal';
 
 const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
   const { logActivity } = useCRM();
@@ -16,6 +17,7 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
   const [error, setError] = useState(null);
   const [showActivityForm, setShowActivityForm] = useState(false);
   const [activeTab, setActiveTab] = useState('activities'); // activities, deals, leads
+  const [showEmailModal, setShowEmailModal] = useState(false);
 
   const fetchDetails = async () => {
     try {
@@ -52,7 +54,7 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12 text-slate-400 text-sm">
+      <div className="flex justify-center items-center py-12 th-text-muted text-sm">
         Loading customer profile...
       </div>
     );
@@ -60,8 +62,8 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
 
   if (error || !detailData) {
     return (
-      <div className="glass rounded-2xl p-8 text-center space-y-4">
-        <p className="text-rose-400 font-medium">{error || 'Failed to load customer profile.'}</p>
+      <div className="th-surface rounded-2xl p-8 text-center space-y-4 border th-border">
+        <p className="text-rose-450 font-medium">{error || 'Failed to load customer profile.'}</p>
         <button onClick={onBack} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white">
           <ArrowLeft className="w-4 h-4" /> Go Back
         </button>
@@ -76,32 +78,32 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
       {/* Back Button */}
       <button 
         onClick={onBack}
-        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-400 hover:text-white transition-colors"
+        className="inline-flex items-center gap-2 text-sm font-semibold th-text-secondary hover:th-text-primary transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Customers
       </button>
 
       {/* Profile Header */}
-      <div className="glass rounded-2xl p-6 border border-slate-800/80 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div className="th-surface rounded-2xl p-6 border th-border flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-brand-400 flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-brand-500/10">
             {customer.name.substring(0, 2).toUpperCase()}
           </div>
           <div>
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold text-white">{customer.name}</h2>
+              <h2 className="text-2xl font-bold th-text-primary">{customer.name}</h2>
               <span className={getStatusBadgeClass(customer.status)}>{customer.status}</span>
             </div>
             {customer.company && (
-              <div className="flex items-center gap-1.5 mt-1 text-slate-400 text-sm">
-                <Building2 className="w-4 h-4" />
+              <div className="flex items-center gap-1.5 mt-1 th-text-secondary text-sm">
+                <Building2 className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                 <span>{customer.company}</span>
               </div>
             )}
             <div className="flex flex-wrap gap-1.5 mt-3">
               {customer.tags?.map((tag, idx) => (
-                <span key={idx} className="bg-slate-800 text-slate-400 border border-slate-700/50 px-2 py-0.5 rounded text-xs">
+                <span key={idx} className="th-badge-accent px-2 py-0.5 rounded text-xs font-semibold">
                   {tag}
                 </span>
               ))}
@@ -111,19 +113,27 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
 
         {/* Contact Info and Actions */}
         <div className="flex flex-col md:items-end gap-4 w-full md:w-auto">
-          <div className="flex flex-wrap gap-x-6 gap-y-2 text-slate-400 text-xs">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 th-text-secondary text-xs">
             <span className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-slate-500" />
+              <Mail className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
               {customer.email}
+              <button
+                onClick={() => setShowEmailModal(true)}
+                title={`Send email to ${customer.email}`}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold transition-colors hover:text-white"
+                style={{ backgroundColor: 'var(--accent-soft)', color: 'var(--accent)', border: '1px solid var(--border)' }}
+              >
+                <Send className="w-3 h-3" /> Send Email
+              </button>
             </span>
             {customer.phone && (
               <span className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-slate-500" />
+                <Phone className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
                 {customer.phone}
               </span>
             )}
             <span className="flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-slate-500" />
+              <Calendar className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
               Joined {formatDate(customer.createdAt)}
             </span>
           </div>
@@ -131,14 +141,14 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
           <div className="flex gap-3 w-full md:w-auto">
             <button 
               onClick={() => onEdit(customer)}
-              className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white transition-colors border border-slate-750"
+              className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold border th-border th-text-secondary bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
               <Edit className="w-3.5 h-3.5" />
               Edit Profile
             </button>
             <button 
               onClick={() => onDelete(customer._id)}
-              className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white transition-colors border border-rose-500/20"
+              className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white transition-colors border border-rose-500/20"
             >
               <Trash2 className="w-3.5 h-3.5" />
               Delete Profile
@@ -150,23 +160,32 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Side: Notes & Quick Stats */}
         <div className="space-y-6">
-          <div className="glass rounded-2xl p-6 space-y-4">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Internal Notes</h3>
-            <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line bg-slate-950/40 p-4 rounded-xl border border-slate-850">
+          <div className="th-surface rounded-2xl p-6 space-y-4 border th-border">
+            <h3 className="text-sm font-bold th-text-primary uppercase tracking-wider">Internal Notes</h3>
+            <p 
+              className="text-sm th-text-secondary leading-relaxed whitespace-pre-line p-4 rounded-xl border th-border"
+              style={{ backgroundColor: 'var(--bg-elevated)' }}
+            >
               {customer.notes || 'No notes added yet. Edit profile to write background details.'}
             </p>
           </div>
 
-          <div className="glass rounded-2xl p-6">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-4">Pipeline Stats</h3>
+          <div className="th-surface rounded-2xl p-6 border th-border">
+            <h3 className="text-sm font-bold th-text-primary uppercase tracking-wider mb-4">Pipeline Stats</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-850">
-                <span className="text-xs text-slate-500 block">Total Deals</span>
-                <span className="text-lg font-bold text-white mt-1 block">{deals.length}</span>
+              <div 
+                className="p-4 rounded-xl border th-border"
+                style={{ backgroundColor: 'var(--bg-elevated)' }}
+              >
+                <span className="text-xs th-text-muted block">Total Deals</span>
+                <span className="text-lg font-bold th-text-primary mt-1 block">{deals.length}</span>
               </div>
-              <div className="bg-slate-950/40 p-4 rounded-xl border border-slate-850">
-                <span className="text-xs text-slate-500 block">Deals Value</span>
-                <span className="text-lg font-bold text-brand-400 mt-1 block">
+              <div 
+                className="p-4 rounded-xl border th-border"
+                style={{ backgroundColor: 'var(--bg-elevated)' }}
+              >
+                <span className="text-xs th-text-muted block">Deals Value</span>
+                <span className="text-lg font-bold text-brand-600 dark:text-brand-400 mt-1 block">
                   {formatCurrency(deals.reduce((sum, d) => sum + (d.stage === 'closed-won' || d.stage !== 'closed-lost' ? d.value : 0), 0))}
                 </span>
               </div>
@@ -177,11 +196,11 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
         {/* Right Side: Associated Activities, Deals, and Leads */}
         <div className="lg:col-span-2 space-y-6">
           {/* Tab Navigation */}
-          <div className="flex border-b border-slate-800 gap-6">
+          <div className="flex border-b th-border gap-6">
             <button 
               onClick={() => setActiveTab('activities')}
               className={`pb-3 font-semibold text-sm transition-colors relative ${
-                activeTab === 'activities' ? 'text-white' : 'text-slate-400 hover:text-white'
+                activeTab === 'activities' ? 'th-text-primary' : 'th-text-secondary hover:th-text-primary'
               }`}
             >
               <span className="flex items-center gap-2">
@@ -193,7 +212,7 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
             <button 
               onClick={() => setActiveTab('deals')}
               className={`pb-3 font-semibold text-sm transition-colors relative ${
-                activeTab === 'deals' ? 'text-white' : 'text-slate-400 hover:text-white'
+                activeTab === 'deals' ? 'th-text-primary' : 'th-text-secondary hover:th-text-primary'
               }`}
             >
               <span className="flex items-center gap-2">
@@ -205,7 +224,7 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
             <button 
               onClick={() => setActiveTab('leads')}
               className={`pb-3 font-semibold text-sm transition-colors relative ${
-                activeTab === 'leads' ? 'text-white' : 'text-slate-400 hover:text-white'
+                activeTab === 'leads' ? 'th-text-primary' : 'th-text-secondary hover:th-text-primary'
               }`}
             >
               <span className="flex items-center gap-2">
@@ -221,7 +240,7 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
             {activeTab === 'activities' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Communication Timeline</h4>
+                  <h4 className="text-sm font-bold th-text-muted uppercase tracking-wider">Communication Timeline</h4>
                   <button 
                     onClick={() => setShowActivityForm(true)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold transition-colors"
@@ -244,25 +263,25 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
 
             {activeTab === 'deals' && (
               <div className="space-y-4">
-                <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Customer Pipeline</h4>
+                <h4 className="text-sm font-bold th-text-muted uppercase tracking-wider">Customer Pipeline</h4>
                 {deals.length === 0 ? (
-                  <div className="glass rounded-xl p-8 text-center text-slate-500 text-sm">
+                  <div className="th-surface border th-border rounded-xl p-8 text-center th-text-secondary text-sm">
                     No deals open for this customer.
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {deals.map(deal => (
-                      <div key={deal._id} className="glass border border-slate-800/80 p-5 rounded-xl space-y-3">
+                      <div key={deal._id} className="th-surface border th-border p-5 rounded-xl space-y-3">
                         <div className="flex justify-between items-start">
-                          <h5 className="font-bold text-white">{deal.title}</h5>
+                          <h5 className="font-bold th-text-primary">{deal.title}</h5>
                           <span className={getStatusBadgeClass(deal.stage)}>{deal.stage}</span>
                         </div>
                         <div className="flex justify-between items-center text-xs">
-                          <span className="text-slate-400">Value</span>
-                          <span className="font-bold text-brand-400">{formatCurrency(deal.value)}</span>
+                          <span className="th-text-muted">Value</span>
+                          <span className="font-bold text-brand-600 dark:text-brand-400">{formatCurrency(deal.value)}</span>
                         </div>
                         {deal.expectedCloseDate && (
-                          <div className="flex justify-between items-center text-xs text-slate-400 border-t border-slate-800 pt-2">
+                          <div className="flex justify-between items-center text-xs th-text-muted border-t th-border pt-2">
                             <span>Close Date</span>
                             <span>{formatDate(deal.expectedCloseDate)}</span>
                           </div>
@@ -276,20 +295,20 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
 
             {activeTab === 'leads' && (
               <div className="space-y-4">
-                <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Associated Leads</h4>
+                <h4 className="text-sm font-bold th-text-muted uppercase tracking-wider">Associated Leads</h4>
                 {leads.length === 0 ? (
-                  <div className="glass rounded-xl p-8 text-center text-slate-500 text-sm">
+                  <div className="th-surface border th-border rounded-xl p-8 text-center th-text-secondary text-sm">
                     No leads associated with this customer.
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {leads.map(lead => (
-                      <div key={lead._id} className="glass border border-slate-800/80 p-4 rounded-xl flex items-center justify-between">
+                      <div key={lead._id} className="th-surface border th-border p-4 rounded-xl flex items-center justify-between">
                         <div className="space-y-1">
-                          <h5 className="font-semibold text-white text-sm">{lead.name}</h5>
-                          <div className="flex gap-3 text-xs text-slate-400">
-                            <span>Source: <strong className="text-slate-300">{lead.source}</strong></span>
-                            <span>Assigned: <strong className="text-slate-300">{lead.assignedTo || 'Unassigned'}</strong></span>
+                          <h5 className="font-semibold th-text-primary text-sm">{lead.name}</h5>
+                          <div className="flex gap-3 text-xs th-text-muted">
+                            <span>Source: <strong className="th-text-secondary">{lead.source}</strong></span>
+                            <span>Assigned: <strong className="th-text-secondary">{lead.assignedTo || 'Unassigned'}</strong></span>
                           </div>
                         </div>
                         <span className={getStatusBadgeClass(lead.status)}>{lead.status}</span>
@@ -302,6 +321,13 @@ const CustomerDetail = ({ customerId, onBack, onEdit, onDelete }) => {
           </div>
         </div>
       </div>
+
+      {showEmailModal && (
+        <SendEmailModal
+          customer={customer}
+          onClose={() => setShowEmailModal(false)}
+        />
+      )}
     </div>
   );
 };
